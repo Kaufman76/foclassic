@@ -886,6 +886,7 @@ int FOClient::MainLoop()
 
     if( SaveLoadProcessDraft && GetMainScreen() == CLIENT_MAIN_SCREEN_WORLDMAP )
         SaveLoadFillDraft();
+
     ConsoleDraw();
     MessBoxDraw();
 
@@ -12039,6 +12040,7 @@ void FOClient::SScriptFunc::Global_DrawHardcodedScreen( int screen )
     {
         case CLIENT_MAIN_SCREEN_LOGIN:
             Self->LogDraw();
+            Self->MessBoxDraw();
             break;
         case CLIENT_MAIN_SCREEN_REGISTRATION:
             Self->ChaDraw( true );
@@ -12050,9 +12052,11 @@ void FOClient::SScriptFunc::Global_DrawHardcodedScreen( int screen )
             break;
         case CLIENT_MAIN_SCREEN_GAME:
             Self->IntDraw();
+            Self->MessBoxDraw();
             break;
         case CLIENT_MAIN_SCREEN_WORLDMAP:
             Self->GmapDraw();
+            Self->MessBoxDraw();
             break;
         case CLIENT_MAIN_SCREEN_WAIT:
             Self->WaitDraw();

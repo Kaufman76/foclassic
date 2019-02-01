@@ -2203,9 +2203,10 @@ void Map::NextCritterTurn()
             }
         }
 
-        cr->Send_ParamOther( OTHER_YOU_TURN, GameOpt.TurnBasedTick );
-        cr->SendA_ParamOther( OTHER_YOU_TURN, GameOpt.TurnBasedTick );
-        TurnBasedEndTick = Timer::GameTick() + GameOpt.TurnBasedTick;
+        uint ticks = cr->IsPlayer() ? GameOpt.TurnBasedTick : 5000;
+        cr->Send_ParamOther( OTHER_YOU_TURN, ticks );
+        cr->SendA_ParamOther( OTHER_YOU_TURN, ticks );
+        TurnBasedEndTick = Timer::GameTick() + ticks;
 
         cr->EventTurnBasedProcess( this, true );
         EventTurnBasedProcess( cr, true );

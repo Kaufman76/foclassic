@@ -22,7 +22,7 @@ include(FOClassicVersion)
 include(FormatSource)
 
 set( MAKE_FILE     "Makefile" )
-set( SOLUTION_FILE "FOClassic.sln" )
+set( SOLUTION_FILE "FOClassic_new.sln" )
 
 GetProjectVersion()
 FOClassicVersion()

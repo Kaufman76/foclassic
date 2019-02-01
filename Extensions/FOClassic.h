@@ -126,6 +126,8 @@
 
 using namespace std;
 
+#include "..\Source\Shared\Defines.Public.h"
+
 // AngelScript
 #include "AngelScript/angelscript.h"
 EXPORT_UNINITIALIZED asIScriptEngine* ASEngine;
@@ -1925,6 +1927,17 @@ inline int GetDistantion( int x1, int y1, int x2, int y2 )
         return max( dx, dy );
     }
 }
+
+#define FONLINE_DLL_ENTRY( isCompiler )               \
+    GameOptions * FOnline;                            \
+    asIScriptEngine* ASEngine;                        \
+    EXPORT void TARGET_NAME() {}                      \
+    void ( * Log )( const char* frmt, ... );          \
+    asIScriptContext* ( *ScriptGetActiveContext )( ); \
+    const char* (ScriptGetLibraryOptions) ( );        \
+    const char* (ScriptGetLibraryVersion) ( );        \
+    EXPORT void DllMainEx( bool isCompiler )
+// FONLINE_DLL_ENTRY
 
 inline void static_asserts()
 {

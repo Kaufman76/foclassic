@@ -3329,7 +3329,7 @@ uint Critter::GetItemsVolume()
 int Critter::GetFreeWeight()
 {
     int cur_weight = GetItemsWeight();
-    int max_weight = GetParam( ST_CARRY_WEIGHT );
+    int max_weight = GetParam( ST_CARRY_WEIGHT ) * 2;
     return max_weight - cur_weight;
 }
 
@@ -3705,6 +3705,7 @@ void Client::Disconnect()
     IsDisconnected = true;
     if( !DisconnectTick )
         DisconnectTick = Timer::FastTick();
+	RemoveFromGame();
 }
 
 void Client::RemoveFromGame()

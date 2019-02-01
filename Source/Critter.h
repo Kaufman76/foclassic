@@ -760,4 +760,11 @@ public:
     ~Npc();
 };
 
+inline void static_asserts()
+{
+	// kvuli FOClassic.h
+	STATIC_ASSERT( sizeof(Client) == 10784 );
+	STATIC_ASSERT( sizeof(GameOptions) == 1384 );
+}
+
 #endif // __CRITTER__

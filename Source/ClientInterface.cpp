@@ -2892,23 +2892,44 @@ void FOClient::IntDraw()
 
     // Indicator
     Item* item = Chosen->ItemSlotMain;
+    if (item->IsNotValid)
+        return;
+    
     int indicator_max = item->Proto->IndicatorMax;
     int indicator_cur = item->Data.Indicator;
+    int ammoPid = 0;
+    int ammoCount = 0;
 
     if( item->IsWeapon() && item->WeapGetMaxAmmoCount() )
     {
         indicator_max = item->WeapGetMaxAmmoCount();
         indicator_cur = item->WeapGetAmmoCount();
+        ammoPid = item->WeapGetAmmoPid();
+        Item* ammoItem = Chosen->GetItemByPid(ammoPid);
+        if (ammoItem != NULL)
+            ammoCount = ammoItem->GetCount();
     }
+
+    int indicatorType = GameOpt.IndicatorType;
+    if (indicatorType > INDICATOR_BOTH)
+        indicatorType = INDICATOR_BOTH;
+    int color = COLOR_TEXT_GREEN;
+    int percent = 0;
 
     if( indicator_max )
     {
-        if( GameOpt.IndicatorType == INDICATOR_LINES || GameOpt.IndicatorType == INDICATOR_BOTH )
-            DrawIndicator( IntWAmmoCount, IntAmmoPoints, COLOR_TEXT_GREEN, Procent( indicator_max, indicator_cur ), IntAmmoTick, true, false );
-        if( GameOpt.IndicatorType == INDICATOR_NUMBERS || GameOpt.IndicatorType == INDICATOR_BOTH )
-            SprMngr.DrawStr( Rect( IntWAmmoCountStr, item_offsx, item_offsy ), Str::FormatBuf( "%03d", indicator_cur ), 0, IfaceHold == IFACE_INT_ITEM ? COLOR_TEXT_DGREEN : COLOR_TEXT, FONT_TYPE_SPECIAL );
+        percent = Procent( indicator_max, indicator_cur );
+        if (percent <= 20)
+            color = COLOR_TEXT_RED;
+        else if (percent <= 50)
+            color = COLOR_TEXT_ORANGE;
+        if( indicatorType == INDICATOR_LINES || indicatorType == INDICATOR_BOTH )
+            DrawIndicator( IntWAmmoCount, IntAmmoPoints, color, percent, IntAmmoTick, true, false );
+        if( indicatorType == INDICATOR_NUMBERS || indicatorType == INDICATOR_BOTH )
+            SprMngr.DrawStr( Rect( IntWAmmoCountStr, item_offsx, item_offsy ), Str::FormatBuf( "%03d (%03d)", indicator_cur, ammoCount ), 0, color, FONT_TYPE_SPECIAL );
+		// IfaceHold == IFACE_INT_ITEM ? COLOR_TEXT_DGREEN : COLOR_TEXT
     }
-    else if( GameOpt.IndicatorType == INDICATOR_LINES || GameOpt.IndicatorType == INDICATOR_BOTH )
+    else if( indicatorType == INDICATOR_LINES || indicatorType == INDICATOR_BOTH )
     {
         DrawIndicator( IntWAmmoCount, IntAmmoPoints, COLOR_TEXT_GREEN, 0, IntAmmoTick, true, false );
     }
@@ -2916,12 +2937,20 @@ void FOClient::IntDraw()
     // Deteoration indicator
     if( item->IsDeteriorable() )
     {
-        if( GameOpt.IndicatorType == INDICATOR_LINES || GameOpt.IndicatorType == INDICATOR_BOTH )
-            DrawIndicator( IntWWearProcent, IntWearPoints, COLOR_TEXT_RED, item->GetDeteriorationProc(), IntWearTick, true, false );
-        if( GameOpt.IndicatorType == INDICATOR_NUMBERS || GameOpt.IndicatorType == INDICATOR_BOTH )
-            SprMngr.DrawStr( Rect( IntWWearProcentStr, item_offsx, item_offsy ), Str::FormatBuf( "%d%%", item->GetDeteriorationProc() ), 0, IfaceHold == IFACE_INT_ITEM ? COLOR_TEXT_DRED : COLOR_TEXT_RED, FONT_TYPE_SPECIAL );
+        percent = item->GetDeteriorationProc();
+        color = COLOR_TEXT_GREEN;
+        if (percent >= 70)
+            color = COLOR_TEXT_RED;
+        else if (percent >= 40)
+            color = COLOR_TEXT_ORANGE;
+        percent = 100 - percent;
+        if( indicatorType == INDICATOR_LINES || indicatorType == INDICATOR_BOTH )
+            DrawIndicator( IntWWearProcent, IntWearPoints, color, percent, IntWearTick, true, false );
+        if( indicatorType == INDICATOR_NUMBERS || indicatorType == INDICATOR_BOTH )
+            SprMngr.DrawStr( Rect( IntWWearProcentStr, item_offsx, item_offsy ), Str::FormatBuf( "%d%%", percent ), 0, color, FONT_TYPE_SPECIAL );
+        // IfaceHold == IFACE_INT_ITEM ? COLOR_TEXT_DRED : COLOR_TEXT_RED
     }
-    else if( GameOpt.IndicatorType == INDICATOR_LINES || GameOpt.IndicatorType == INDICATOR_BOTH )
+    else if( indicatorType == INDICATOR_LINES || indicatorType == INDICATOR_BOTH )
     {
         DrawIndicator( IntWWearProcent, IntWearPoints, COLOR_TEXT_RED, 0, IntWearTick, true, false );
     }
@@ -8977,8 +9006,8 @@ void FOClient::AimDraw()
     if( !Chosen || !cr )
         return;
 
-    if( GameOpt.ApCostAimArms == GameOpt.ApCostAimTorso && GameOpt.ApCostAimTorso == GameOpt.ApCostAimLegs && GameOpt.ApCostAimLegs == GameOpt.ApCostAimGroin && GameOpt.ApCostAimGroin == GameOpt.ApCostAimEyes && GameOpt.ApCostAimEyes == GameOpt.ApCostAimHead )
-    {
+    //if( GameOpt.ApCostAimArms == GameOpt.ApCostAimTorso && GameOpt.ApCostAimTorso == GameOpt.ApCostAimLegs && GameOpt.ApCostAimLegs == GameOpt.ApCostAimGroin && GameOpt.ApCostAimGroin == GameOpt.ApCostAimEyes && GameOpt.ApCostAimEyes == GameOpt.ApCostAimHead )
+    //{
         SprMngr.DrawStr( Rect( AimWHeadT, AimX, AimY ), Str::FormatBuf( "%s", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_HEAD - 1 ) ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_HEAD ? COLOR_TEXT_RED : COLOR_TEXT );
         SprMngr.DrawStr( Rect( AimWLArmT, AimX, AimY ), Str::FormatBuf( "%s", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_LEFT_ARM - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_LARM ? COLOR_TEXT_RED : COLOR_TEXT );
         SprMngr.DrawStr( Rect( AimWRArmT, AimX, AimY ), Str::FormatBuf( "%s", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_RIGHT_ARM - 1 ) ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_RARM ? COLOR_TEXT_RED : COLOR_TEXT );
@@ -8987,18 +9016,18 @@ void FOClient::AimDraw()
         SprMngr.DrawStr( Rect( AimWLLegT, AimX, AimY ), Str::FormatBuf( "%s", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_LEFT_LEG - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_LLEG ? COLOR_TEXT_RED : COLOR_TEXT );
         SprMngr.DrawStr( Rect( AimWEyesT, AimX, AimY ), Str::FormatBuf( "%s", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_EYES - 1 ) ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_EYES ? COLOR_TEXT_RED : COLOR_TEXT );
         SprMngr.DrawStr( Rect( AimWGroinT, AimX, AimY ), Str::FormatBuf( "%s", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_GROIN - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_GROIN ? COLOR_TEXT_RED : COLOR_TEXT );
-    }
-    else
-    {
-        SprMngr.DrawStr( Rect( AimWHeadT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_HEAD - 1 ), GameOpt.ApCostAimHead ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_HEAD ? COLOR_TEXT_RED : COLOR_TEXT );
-        SprMngr.DrawStr( Rect( AimWLArmT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimArms, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_LEFT_ARM - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_LARM ? COLOR_TEXT_RED : COLOR_TEXT );
-        SprMngr.DrawStr( Rect( AimWRArmT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_RIGHT_ARM - 1 ), GameOpt.ApCostAimArms ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_RARM ? COLOR_TEXT_RED : COLOR_TEXT );
-        SprMngr.DrawStr( Rect( AimWTorsoT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimTorso, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_TORSO - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_TORSO ? COLOR_TEXT_RED : COLOR_TEXT );
-        SprMngr.DrawStr( Rect( AimWRLegT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_RIGHT_LEG - 1 ), GameOpt.ApCostAimLegs ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_RLEG ? COLOR_TEXT_RED : COLOR_TEXT );
-        SprMngr.DrawStr( Rect( AimWLLegT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimLegs, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_LEFT_LEG - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_LLEG ? COLOR_TEXT_RED : COLOR_TEXT );
-        SprMngr.DrawStr( Rect( AimWEyesT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_EYES - 1 ), GameOpt.ApCostAimEyes ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_EYES ? COLOR_TEXT_RED : COLOR_TEXT );
-        SprMngr.DrawStr( Rect( AimWGroinT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimGroin, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_GROIN - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_GROIN ? COLOR_TEXT_RED : COLOR_TEXT );
-    }
+    //}
+    //else
+    //{
+    //    SprMngr.DrawStr( Rect( AimWHeadT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_HEAD - 1 ), GameOpt.ApCostAimHead ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_HEAD ? COLOR_TEXT_RED : COLOR_TEXT );
+    //    SprMngr.DrawStr( Rect( AimWLArmT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimArms, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_LEFT_ARM - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_LARM ? COLOR_TEXT_RED : COLOR_TEXT );
+    //    SprMngr.DrawStr( Rect( AimWRArmT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_RIGHT_ARM - 1 ), GameOpt.ApCostAimArms ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_RARM ? COLOR_TEXT_RED : COLOR_TEXT );
+    //    SprMngr.DrawStr( Rect( AimWTorsoT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimTorso, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_TORSO - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_TORSO ? COLOR_TEXT_RED : COLOR_TEXT );
+    //    SprMngr.DrawStr( Rect( AimWRLegT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_RIGHT_LEG - 1 ), GameOpt.ApCostAimLegs ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_RLEG ? COLOR_TEXT_RED : COLOR_TEXT );
+    //    SprMngr.DrawStr( Rect( AimWLLegT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimLegs, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_LEFT_LEG - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_LLEG ? COLOR_TEXT_RED : COLOR_TEXT );
+    //    SprMngr.DrawStr( Rect( AimWEyesT, AimX, AimY ), Str::FormatBuf( "%s (%u)", MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_EYES - 1 ), GameOpt.ApCostAimEyes ), FONT_FLAG_NOBREAK, IfaceHold == IFACE_AIM_EYES ? COLOR_TEXT_RED : COLOR_TEXT );
+    //    SprMngr.DrawStr( Rect( AimWGroinT, AimX, AimY ), Str::FormatBuf( "(%u) %s", GameOpt.ApCostAimGroin, MsgCombat->GetStr( 1000 + cr->GetCrTypeAlias() * 10 + HIT_LOCATION_GROIN - 1 ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERR, IfaceHold == IFACE_AIM_GROIN ? COLOR_TEXT_RED : COLOR_TEXT );
+    //}
 
     bool zero = !HexMngr.TraceBullet( Chosen->GetHexX(), Chosen->GetHexY(), cr->GetHexX(), cr->GetHexY(), Chosen->GetAttackDist(), 0.0f, cr, false, NULL, 0, NULL, NULL, NULL, true );
     SprMngr.DrawStr( Rect( AimWHeadP, AimX, AimY ), Str::ItoA( zero ? 0 : ScriptGetHitProc( cr, HIT_LOCATION_HEAD ) ), FONT_FLAG_NOBREAK | FONT_FLAG_CENTERX );

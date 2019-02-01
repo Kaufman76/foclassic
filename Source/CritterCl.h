@@ -349,4 +349,10 @@ typedef map<uint, CritterCl*, less<uint>> CritMap;
 typedef vector<CritterCl*>                CritVec;
 typedef CritterCl*                        CritterClPtr;
 
+inline void static_asserts()
+{
+	// kvuli FOClassic.h
+	STATIC_ASSERT( sizeof(CritterCl) == 5996 );
+}
+
 #endif // __CRITTER_CL__ //

@@ -428,7 +428,7 @@ uint CritterCl::GetItemsVolume()
 int CritterCl::GetFreeWeight()
 {
     int cur_weight = GetItemsWeight();
-    int max_weight = GetParam( ST_CARRY_WEIGHT );
+    int max_weight = GetParam( ST_CARRY_WEIGHT ) * 2;
     return max_weight - cur_weight;
 }
 
@@ -471,7 +471,7 @@ uint CritterCl::GetUsePicName( uchar num_slot )
 
     uchar       use;
     Item*       item = GetSlotUse( num_slot, use );
-    if( !item )
+    if( !item || item->IsNotValid)
         return 0;
     if( item->IsWeapon() )
     {
@@ -860,7 +860,9 @@ void CritterCl::SetAim( uchar hit_location )
 
 uint CritterCl::GetUseApCost( Item* item, uchar rate )
 {
-    return GameOpt.GetUseApCost ? GameOpt.GetUseApCost( this, item, rate ) : 1;
+	if (item->IsNotValid)
+		return 1;
+	return GameOpt.GetUseApCost ? GameOpt.GetUseApCost( this, item, rate ) : 1;
 }
 
 ProtoItem* CritterCl::GetUnarmedItem( uchar tree, uchar priority )
